@@ -11,12 +11,14 @@ gamedata = numpy.zeros((10,10), numpy.int)
 MOVESTEP = 50
 LEFTBOUND = (50,50)
 RIGHTBOUND = (500,500)
-SCREENRECT     = Rect(0, 0, 550, 550)
+SCREENRECT = Rect(0, 0, 550, 550)
+PLAYERSIZE = 20
+INIT_VIR_POS = (9,4)#line 10,row 5
 main_dir = os.path.split(os.path.abspath(__file__))[0]
+gamedata[INIT_VIR_POS[0]][INIT_VIR_POS[1]] = 1
 print(gamedata)
-print(gamedata[3][5])
 
-class CHASE(Enum):
+class chess(Enum):
     none = 0
     black = 1
     white = 2
@@ -36,22 +38,35 @@ def load_image(file):
         raise SystemExit('Could not load image "%s" %s'%(file, pygame.get_error()))
     return surface.convert()
 
-class Player_black(pygame.sprite.Sprite):
+class Player(pygame.sprite.Sprite):
     images = []    
     def __init__(self):
         pygame.sprite.Sprite.__init__(self, self.containers)
         self.image = self.images[0]
-        self.rect = pygame.Rect(240,490,20,20)
-        self.pos = position(0,0)
+        self.rect = pygame.Rect(RIGHTBOUND[0]/2 - PLAYERSIZE/2,RIGHTBOUND[0]-PLAYERSIZE/2,20,20)
+        #virtual position
+        self.pos = position(INIT_VIR_POS[0],INIT_VIR_POS[1])
         self.speed = MOVESTEP   
         self.origtop = self.rect.top 
-        print(self.rect)
+        #print(self.rect)
         self.bounce = 24   
 
     def move(self, direction):
-        self.rect.move_ip(direction*self.speed, 0)
-        self.rect = self.rect.clamp(SCREENRECT)
-        self.rect.top = (self.origtop - (self.rect.left//self.bounce%2))
+        if direction<2:
+            self.rect.move_ip(direction*self.speed, 0)
+        else:
+            self.rect.move_ip(0,(direction-3)*self.speed)#2--up,4--down
+        #dont let player out of the screen
+        #self.rect = self.rect.clamp(SCREENRECT)
+        #self.rect.top = (self.origtop - (self.rect.left//self.bounce%2))
+    def chessdone(self):
+        pass
+
+class black_player(Player):
+    def __init__(self):
+        self.role = chess.black
+    def init_img(self,imgs=[]):
+        Player.images = imgs
 
 def main():    
     pygame.init()
@@ -72,10 +87,11 @@ def main():
     blues = pygame.sprite.Group()
     all = pygame.sprite.RenderUpdates()
     #要先加入containers不然会说self没有container，不知道为什么
-    Player_black.containers = all
-    Player_black.images = [load_image("black.png")]
+    black_player.containers = all
+    #black_player.init_img([load_image("black.png")])
 
-    bplay = Player_black()
+    bplay = black_player()
+    bplay.init_img([load_image("black.png")])
 
     while True:
         all.clear(screen, background)
@@ -89,7 +105,11 @@ def main():
             if keystate[K_RIGHT] == 1:
                 bplay.move(1) 
             if keystate[K_LEFT] == 1:
-                bplay.move(-1)        
+                bplay.move(-1)
+            if keystate[K_UP] == 1:
+                bplay.move(2)
+            if keystate[K_DOWN] == 1:
+                bplay.move(4)        
         clock.tick(40)
         all.update()
         #draw the scene
