@@ -1,4 +1,5 @@
 import os.path
+import copy
 
 #import basic pygame modules
 import pygame
@@ -15,7 +16,7 @@ SCREENRECT = Rect(0, 0, 550, 550)
 PLAYERSIZE = 20
 INIT_VIR_POS = (9,0)#line 10,row 0
 main_dir = os.path.split(os.path.abspath(__file__))[0]
-print(gamedata)
+#print(gamedata)
 
 class chess(Enum):
     none = -1
@@ -44,13 +45,10 @@ class Player(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self, self.containers)
         #self.image = self.images[0]
         self.rect = pygame.Rect(MOVESTEP - PLAYERSIZE/2,RIGHTBOUND[0]-PLAYERSIZE/2,20,20)
-        self.init_rect = self.rect
         #virtual position
         self.pos.x = INIT_VIR_POS[0]
         self.pos.y = INIT_VIR_POS[1]
-        self.init_pos = self.pos
         self.pixelpos = position(MOVESTEP - PLAYERSIZE/2,RIGHTBOUND[0]-PLAYERSIZE/2)
-        self.init_pixelpos = self.pixelpos
         self.speed = MOVESTEP   
         self.origtop = self.rect.top 
         #print(self.rect)
@@ -66,13 +64,12 @@ class Player(pygame.sprite.Sprite):
             self.pixelpos.y += (direction-3)*self.speed
             self.pos.x += (direction-3)
     def resetpos(self):
-        self.rect = self.init_rect
-        self.pos = self.init_pos
-        self.pixelpos = self.init_pixelpos
-        print(self.pos.x,self.pos.y) 
-        #dont let player out of the screen
-        #self.rect = self.rect.clamp(SCREENRECT)
-        #self.rect.top = (self.origtop - (self.rect.left//self.bounce%2))
+        self.rect.move_ip((MOVESTEP - PLAYERSIZE/2)-self.pixelpos.x, (RIGHTBOUND[0]-PLAYERSIZE/2)-self.pixelpos.y)
+        self.pos.x = INIT_VIR_POS[0]
+        self.pos.y = INIT_VIR_POS[1]
+        self.pixelpos.x =  MOVESTEP - PLAYERSIZE/2
+        self.pixelpos.y =  RIGHTBOUND[0]-PLAYERSIZE/2
+    
     
 
 class chess_player(Player):
@@ -89,14 +86,15 @@ class chess_player(Player):
             self.image = Player.images[1]
         elif(self.role == chess.blue):
             self.role = chess.black
-            self.image = Player.images[0]
-        Player.resetpos(self)
+            self.image = Player.images[0]        
     def chessdone(self):
         if(self.role == chess.black):
             gamedata[Player.pos.x][Player.pos.y] = 1
         else:
             gamedata[Player.pos.x][Player.pos.y] = -1
-        print(gamedata)
+        #print(gamedata)
+    
+
 
 
 def main():    
@@ -121,7 +119,7 @@ def main():
     pblack.init_img([load_image("black.png"),load_image("blue.png")])
 
     while True:
-        all.clear(screen, background)
+        all.clear(screen,background)
 
         #get input
         for event in pygame.event.get():
@@ -138,14 +136,50 @@ def main():
             if keystate[K_DOWN] == 1:
                 pblack.move(4) 
             if keystate[K_SPACE] == 1:
+                screen.blit(pblack.image,(pblack.pixelpos.x,pblack.pixelpos.y))
                 background.blit(pblack.image,(pblack.pixelpos.x,pblack.pixelpos.y))
                 pblack.chessdone()
-                pblack.switchplayer()       
+                pblack.switchplayer() 
+                #pblack.resetpos() 
+                win_test(1)
+                win_test(-1)
         clock.tick(40)
-        all.update()
+        #all.update()
         #draw the scene
         all.draw(screen)
         pygame.display.flip()
+
+
+def win_test(no):
+    winflag1 = 0
+    winflag2 = 0
+    for i in range(0,10):
+        for j in range(0,10):
+            #print(winflag,i,j)
+            if winflag1 != 0:
+                if gamedata[i][j] == no:
+                    winflag1 += 1
+                else:
+                    winflag1 = 0
+            else:
+                if gamedata[i][j] == no:
+                    winflag1 = 1
+            if winflag1 == 5:
+                print(no,": win !")
+    for i in range(0,10):
+        for j in range(0,10):
+            #print(winflag,i,j)
+            if winflag2 != 0:
+                if gamedata[j][i] == no:
+                    winflag2 += 1
+                else:
+                    winflag2 = 0
+            else:
+                if gamedata[j][i] == no:
+                    winflag2 = 1
+            if winflag2 == 5:
+                print(no,": win !")
+            
                 
 
 #call the "main" function if running this script
