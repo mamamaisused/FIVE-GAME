@@ -17,8 +17,12 @@ PLAYERSIZE = 20
 INIT_VIR_POS = (9,0)#line 10,row 0
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 #print(gamedata)
-global WINNUM
+global WINNUM,color,black,blue,INFO
 WINNUM = 0
+blue = 126,206,244
+black = 0,0,0
+color = black
+INFO = ""
 
 
 class chess(Enum):
@@ -84,12 +88,15 @@ class chess_player(Player):
         Player.images = imgs
         self.image = imgs[0]
     def switchplayer(self):
+        global color
         if(self.role == chess.black):
             self.role = chess.blue
             self.image = Player.images[1]
+            color = blue
         elif(self.role == chess.blue):
             self.role = chess.black
-            self.image = Player.images[0]        
+            self.image = Player.images[0]  
+            color = black      
     def chessdone(self):
         if(self.role == chess.black):
             gamedata[Player.pos.x][Player.pos.y] = 1
@@ -101,13 +108,13 @@ class chess_player(Player):
 
 
 def main():   
-    global WINNUM 
+    global WINNUM,INFO
     pygame.init()
     clock = pygame.time.Clock()
     # Set the display mode
     winstyle = 0  # |FULLSCREEN
     bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    screen = pygame.display.set_mode(SCREENRECT.size)
+    screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
     #create the background, tile the bgd image    
     background = load_image('background.gif')
     #for x in range(0, SCREENRECT.width, bgdtile.get_width()):
@@ -123,13 +130,18 @@ def main():
     pblack.init_img([load_image("black.png"),load_image("blue.png")])
 
     INFO = "PLAYING ..."
-    myfont = pygame.font.Font(None,60)
+    myfont = pygame.font.Font(None,40)
     white = 255,255,255
     textImage = myfont.render(INFO,True,white)
      
 
-    while True:
-        screen.blit(textImage,(200,550)) 
+    while True:        
+        global color
+        global WINNUM
+        screen.fill(color)
+        screen.blit(background, (0,0))
+        screen.blit(textImage,(200,560)) 
+        textImage = myfont.render(INFO,True,white)
         all.clear(screen,background)
         #关于显示与刷新需要再研究
         #get input
@@ -156,19 +168,23 @@ def main():
                 win_test(-1)
                 if WINNUM != 0:
                     print (WINNUM)
-                if WINNUM == 1:
-                    print ("black win")
-                else:
-                    print ("blue win")
-        '''
+                    if WINNUM == 1:
+                        INFO = "BLACK WIN!"
+                        color = black
+                        print ("black win")
+                    else:
+                        INFO = "BLUE WIN"
+                        color = blue
+                        print ("blue win")
         clock.tick(40)
         #all.update()
         #draw the scene
-        #all.draw(screen)
+        all.draw(screen)
         pygame.display.flip()
 
 
 def win_test(no):
+    global WINNUM
     winflag1 = 0
     winflag2 = 0
     winflag3 = 0
