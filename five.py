@@ -12,11 +12,14 @@ gamedata = numpy.zeros((10,10), numpy.int)
 MOVESTEP = 50
 LEFTBOUND = (50,50)
 RIGHTBOUND = (500,500)
-SCREENRECT = Rect(0, 0, 550, 550)
+SCREENRECT = Rect(0, 0, 550, 600)
 PLAYERSIZE = 20
 INIT_VIR_POS = (9,0)#line 10,row 0
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 #print(gamedata)
+global WINNUM
+WINNUM = 0
+
 
 class chess(Enum):
     none = -1
@@ -97,7 +100,8 @@ class chess_player(Player):
 
 
 
-def main():    
+def main():   
+    global WINNUM 
     pygame.init()
     clock = pygame.time.Clock()
     # Set the display mode
@@ -118,9 +122,17 @@ def main():
     pblack= chess_player()
     pblack.init_img([load_image("black.png"),load_image("blue.png")])
 
-    while True:
-        all.clear(screen,background)
+    INFO = "PLAYING ..."
+    myfont = pygame.font.Font(None,60)
+    white = 255,255,255
+    textImage = myfont.render(INFO,True,white)
+     
 
+    while True:
+        screen.blit(textImage,(500,250)) 
+        '''
+        all.clear(screen,background)
+        #关于显示与刷新需要再研究
         #get input
         for event in pygame.event.get():
             if event.type == QUIT or \
@@ -143,16 +155,25 @@ def main():
                 #pblack.resetpos() 
                 win_test(1)
                 win_test(-1)
+                if WINNUM != 0:
+                    print (WINNUM)
+                if WINNUM == 1:
+                    print ("black win")
+                else:
+                    print ("blue win")
+        '''
         clock.tick(40)
         #all.update()
         #draw the scene
-        all.draw(screen)
+        #all.draw(screen)
         pygame.display.flip()
 
 
 def win_test(no):
     winflag1 = 0
     winflag2 = 0
+    winflag3 = 0
+    winflag4 = 0
     for i in range(0,10):
         for j in range(0,10):
             #print(winflag,i,j)
@@ -165,7 +186,7 @@ def win_test(no):
                 if gamedata[i][j] == no:
                     winflag1 = 1
             if winflag1 == 5:
-                print(no,": win !")
+                WINNUM = no
     for i in range(0,10):
         for j in range(0,10):
             #print(winflag,i,j)
@@ -178,7 +199,42 @@ def win_test(no):
                 if gamedata[j][i] == no:
                     winflag2 = 1
             if winflag2 == 5:
-                print(no,": win !")
+                WINNUM = no
+    j = 0
+    k = 0
+    for i in range(0,19):
+        #print("------")
+        for j,k in zip(range(0,i+1),range(i,-1,-1)):
+            if k<10 and j<10:
+                #print (j,k,end=' ')
+                if winflag3 != 0:
+                    if gamedata[j][k] == no:
+                        winflag3 += 1
+                    else:
+                        winflag3 = 0
+                else:
+                    if gamedata[j][k] == no:
+                        winflag3 = 1
+                if winflag3 == 5:
+                    WINNUM = no
+    for i in range(-9,10):
+        #print("------")
+        for j,k in zip(range(i,10),range(0,10)):
+            if k>=0 and j>=0: 
+                #print (j,k,end=' ')
+                if winflag4 != 0:
+                    if gamedata[j][k] == no:
+                        winflag4 += 1
+                    else:
+                        winflag4 = 0
+                else:
+                    if gamedata[j][k] == no:
+                        winflag4 = 1
+                if winflag4 == 5:
+                    WINNUM = no
+
+
+            
             
                 
 
