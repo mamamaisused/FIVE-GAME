@@ -107,7 +107,7 @@ def main():
     # Set the display mode
     winstyle = 0  # |FULLSCREEN
     bestdepth = pygame.display.mode_ok(SCREENRECT.size, winstyle, 32)
-    screen = pygame.display.set_mode(SCREENRECT.size, winstyle, bestdepth)
+    screen = pygame.display.set_mode(SCREENRECT.size)
     #create the background, tile the bgd image    
     background = load_image('background.gif')
     #for x in range(0, SCREENRECT.width, bgdtile.get_width()):
@@ -129,8 +129,7 @@ def main():
      
 
     while True:
-        screen.blit(textImage,(500,250)) 
-        '''
+        screen.blit(textImage,(200,550)) 
         all.clear(screen,background)
         #关于显示与刷新需要再研究
         #get input
